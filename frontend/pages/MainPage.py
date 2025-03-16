@@ -50,18 +50,18 @@ class MainPage(BaseClassPage):
         graph_layout = QGridLayout()
 
         # Graph widgets
-        graph_altitude = GraphWidget("Altitude", "Time", "s", "Altitude", "[m]")
-        graph_airspeed = GraphWidget("Air Speed", "Time", "s", "Air Speed", "[m/s]")
-        graph_temperature = GraphWidget("Temperature", "Time", "s", "Temperature", "[C]")
-        graph_pressure = GraphWidget("Pressure", "Time", "s", "Pressure", "[Pa]")
-        graph_voltage = GraphWidget("Voltage", "Time", "s", "Voltage", "[V]")
+        self.graph_altitude = GraphWidget("Altitude", "Time", "s", "Altitude", "[m]")
+        self.graph_airspeed = GraphWidget("Air Speed", "Time", "s", "Air Speed", "[m/s]")
+        self.graph_temperature = GraphWidget("Temperature", "Time", "s", "Temperature", "[C]")
+        self.graph_pressure = GraphWidget("Pressure", "Time", "s", "Pressure", "[Pa]")
+        self.graph_voltage = GraphWidget("Voltage", "Time", "s", "Voltage", "[V]")
 
         # Add graphs to the grid layout
-        graph_layout.addWidget(graph_altitude.plot, 0, 0)
-        graph_layout.addWidget(graph_airspeed.plot, 0, 1)
-        graph_layout.addWidget(graph_temperature.plot, 0, 2)
-        graph_layout.addWidget(graph_pressure.plot, 1, 0)
-        graph_layout.addWidget(graph_voltage.plot, 1, 1)
+        graph_layout.addWidget(self.graph_altitude.plot, 0, 0)
+        graph_layout.addWidget(self.graph_airspeed.plot, 0, 1)
+        graph_layout.addWidget(self.graph_temperature.plot, 0, 2)
+        graph_layout.addWidget(self.graph_pressure.plot, 1, 0)
+        graph_layout.addWidget(self.graph_voltage.plot, 1, 1)
 
         layout.addLayout(hlayout)
         center_layout.addLayout(buttons_group.button_layout)
@@ -71,12 +71,7 @@ class MainPage(BaseClassPage):
         center_layout.addLayout(graph_layout)
 
     def update(self, data):
-        # TEAM_ID, MISSION_TIME, PACKET_COUNT, MODE, STATE, ALTITUDE,
-        # TEMPERATURE, PRESSURE, VOLTAGE, GYRO_R, GYRO_P, GYRO_Y, ACCEL_R,
-        # ACCEL_P, ACCEL_Y, MAG_R, MAG_P, MAG_Y, AUTO_GYRO_ROTATION_RATE,
-        # GPS_TIME, GPS_ALTITUDE, GPS_LATITUDE, GPS_LONGITUDE, GPS_SATS,
-        # CMD_ECHO [,,OPTIONAL_DATA]
-
-        self.sidebar.update()
+        pass
+            
 
 
