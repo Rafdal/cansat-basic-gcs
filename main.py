@@ -7,9 +7,6 @@ print("Running main.py")
 
 from backend.MainModel import MainModel
 from frontend.MainWindow import *
-from frontend.pages.DemoPage import DemoPage
-from frontend.pages.BlankPage import BlankPage
-from frontend.pages.ParamListExample import ParamListExample
 from frontend.pages.MainPage import MainPage
 
 import faulthandler
@@ -23,10 +20,7 @@ if __name__ == '__main__':
 
     # create pages
     pages = [
-        MainPage(),
-        # DemoPage(),
-        # BlankPage(),
-        # ParamListExample(),
+        MainPage()
     ]
 
     print("Pages created, creating main window")

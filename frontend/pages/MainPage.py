@@ -14,14 +14,13 @@ class MainPage(BaseClassPage):
         hlayout = QHBoxLayout()
 
         # Sidebar
-        sidebar = Sidebar()
-        hlayout.addWidget(sidebar.sidebar_widget)
+        self.sidebar = Sidebar()
+        hlayout.addWidget(self.sidebar.sidebar_widget)
 
         center_widget = QWidget()
         center_layout = QVBoxLayout(center_widget)
         hlayout.addWidget(center_widget)
 
-        text_style = '''QLabel{font-size:20px; font-weight:600;}'''
         title_style = '''QLabel{font-size:24px; margin:5px; font-weight:600;}'''
 
         text_command = QLabel('Commands', center_widget)
@@ -71,7 +70,13 @@ class MainPage(BaseClassPage):
         center_layout.addWidget(graphs_title)
         center_layout.addLayout(graph_layout)
 
-    def on_button_click(self):
-        print("Button clicked")
-        self.model.increment_count()
-        self.label.setText(f"Count: {self.model.count}")
+    def update(self, data):
+        # TEAM_ID, MISSION_TIME, PACKET_COUNT, MODE, STATE, ALTITUDE,
+        # TEMPERATURE, PRESSURE, VOLTAGE, GYRO_R, GYRO_P, GYRO_Y, ACCEL_R,
+        # ACCEL_P, ACCEL_Y, MAG_R, MAG_P, MAG_Y, AUTO_GYRO_ROTATION_RATE,
+        # GPS_TIME, GPS_ALTITUDE, GPS_LATITUDE, GPS_LONGITUDE, GPS_SATS,
+        # CMD_ECHO [,,OPTIONAL_DATA]
+
+        self.sidebar.update()
+
+
