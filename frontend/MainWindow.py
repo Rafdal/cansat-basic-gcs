@@ -33,6 +33,8 @@ class MainWindow(QMainWindow):
         rw, rh, sw, sh = rect.width(), rect.height(), 2*self.width(), int(1.5*self.height())
         self.setMinimumSize(400, 300)
         self.setGeometry(rw // 2 - sw // 2, rh // 2 - sh // 2, sw, sh)
+        
+        self.resize(1600, 1000)
 
         # Check we don't have repeated titles
         titles = [page.title for page in pages]
