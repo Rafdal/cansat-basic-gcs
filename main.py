@@ -8,12 +8,15 @@ print("Running main.py")
 from backend.MainModel import MainModel
 from frontend.MainWindow import *
 from frontend.pages.MainPage import MainPage
+import pyqtgraph as pg
+
 
 import faulthandler
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon('frontend/assets/icon.ico'))
+    
 
     # create a Data Model
     mainModel = MainModel()
@@ -22,6 +25,12 @@ if __name__ == '__main__':
     pages = [
         MainPage()
     ]
+
+    data = {'test': True}  # TODO: Conectar al serial
+
+    timer = pg.QtCore.QTimer()
+    timer.timeout.connect(lambda: pages[0].update(data))
+    timer.start(500)
 
     print("Pages created, creating main window")
 

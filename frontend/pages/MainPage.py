@@ -1,20 +1,34 @@
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QGridLayout, QLineEdit
 from frontend.pages.BaseClassPage import BaseClassPage
-from frontend.widgets.BasicWidgets import Button
+# Removed unused import
 from frontend.widgets.Sidebar import Sidebar
 from frontend.widgets.GraphWidget import GraphWidget
 from frontend.widgets.ButtonsGroup import ButtonsGroup
 from PyQt5.QtWidgets import QWidget
 
+## Solo para test
+import random
+import time
+##
 class MainPage(BaseClassPage):
     title = "Dashboard"
+
+    def __init__(self):
+        super().__init__()
+        self.sidebar = Sidebar()
+
+        self.graph_altitude = GraphWidget("Altitude", "Time", "s", "Altitude", "[m]")
+        self.graph_airspeed = GraphWidget("Air Speed", "Time", "s", "Air Speed", "[m/s]")
+        self.graph_temperature = GraphWidget("Temperature", "Time", "s", "Temperature", "[C]")
+        self.graph_pressure = GraphWidget("Pressure", "Time", "s", "Pressure", "[Pa]")
+        self.graph_voltage = GraphWidget("Voltage", "Time", "s", "Voltage", "[V]")
 
     def initUI(self, layout):
 
         hlayout = QHBoxLayout()
 
+
         # Sidebar
-        self.sidebar = Sidebar()
         hlayout.addWidget(self.sidebar.sidebar_widget)
 
         center_widget = QWidget()
@@ -49,14 +63,7 @@ class MainPage(BaseClassPage):
 
         graph_layout = QGridLayout()
 
-        # Graph widgets
-        self.graph_altitude = GraphWidget("Altitude", "Time", "s", "Altitude", "[m]")
-        self.graph_airspeed = GraphWidget("Air Speed", "Time", "s", "Air Speed", "[m/s]")
-        self.graph_temperature = GraphWidget("Temperature", "Time", "s", "Temperature", "[C]")
-        self.graph_pressure = GraphWidget("Pressure", "Time", "s", "Pressure", "[Pa]")
-        self.graph_voltage = GraphWidget("Voltage", "Time", "s", "Voltage", "[V]")
-
-        # Add graphs to the grid layout
+        # Add graphs widgets to the grid layout
         graph_layout.addWidget(self.graph_altitude.plot, 0, 0)
         graph_layout.addWidget(self.graph_airspeed.plot, 0, 1)
         graph_layout.addWidget(self.graph_temperature.plot, 0, 2)
@@ -70,8 +77,50 @@ class MainPage(BaseClassPage):
         center_layout.addWidget(graphs_title)
         center_layout.addLayout(graph_layout)
 
+        
     def update(self, data):
-        pass
-            
+
+        ## solo para test
+        def random_float(min_val, max_val):
+            return round(random.uniform(min_val, max_val), 2)
+
+        def random_int(min_val, max_val):
+            return random.randint(min_val, max_val)
+        ##
+
+        data = {
+            "mission_time": time.strftime("%H:%M:%S", time.gmtime(random_int(0, 36000))),
+            "packet_count": random_int(1, 1000),
+            "mode": random.choice(["SIMuLATION", "NORMAL"]),
+            "state": random.choice(["ASCENT", "DESCENT"]),
+            "temperature": random_float(-20.0, 40.0),
+            "airspeed": random_float(0.0, 50.0),
+            "altitude": random_float(0.0, 5000.0),
+            "pressure": random_float(900.0, 1100.0),
+            "voltage": random_float(3.0, 4.2),
+            "gyro_r": random_float(-1.0, 1.0),
+            "gyro_p": random_float(-1.0, 1.0),
+            "gyro_y": random_float(-1.0, 1.0),
+            "accel_r": random_float(-2.0, 2.0),
+            "accel_p": random_float(-2.0, 2.0),
+            "accel_y": random_float(-2.0, 2.0),
+            "mag_r": random_float(-50.0, 50.0),
+            "mag_p": random_float(-50.0, 50.0),
+            "mag_y": random_float(-50.0, 50.0),
+            "autogyro_desc_rate": random_float(0.0, 5.0),
+            "gps_time": time.strftime("%H:%M:%S", time.gmtime(random_int(0, 86400))),
+            "gps_altitude": random_float(0.0, 2000.0),
+            "gps_latitude": random_float(-90.0, 90.0),
+            "gps_longitude": random_float(-180.0, 180.0),
+            "gps_sats": random_int(0, 12),
+            "cmd_echo": random.choice(["CAL_ALTITUDE"])
+        }
+        
+        self.sidebar.update(data['mission_time'], data['packet_count'], data['mode'], data['state'], data['altitude'], data['temperature'], data['pressure'], data['voltage'], data['gyro_r'], data['gyro_p'], data['gyro_y'], data['accel_r'], data['accel_p'], data['accel_y'], data['mag_r'], data['mag_p'], data['mag_y'], data['autogyro_desc_rate'], data['gps_time'], data['gps_altitude'], data['gps_latitude'], data['gps_longitude'], data['gps_sats'], data['cmd_echo'])
+        self.graph_altitude.update(data['altitude'])
+        self.graph_airspeed.update(data['airspeed'])
+        self.graph_temperature.update(data['temperature'])
+        self.graph_pressure.update(data['pressure'])
+        self.graph_voltage.update(data['voltage'])            
 
 
