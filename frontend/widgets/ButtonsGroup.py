@@ -32,7 +32,7 @@ class ButtonsGroup():
         self.button_layout.addWidget(calibrate_altitude_to_zero_btn, 0, 3)
 
         # Set pitch, yaw, roll button
-        set_pitch_yaw_roll_btn = QPushButton("SET PYR", center_widget)
+        set_pitch_yaw_roll_btn = QPushButton("CAL PYR", center_widget)
         set_pitch_yaw_roll_btn.setStyleSheet(button_style)
         set_pitch_yaw_roll_btn.clicked.connect(lambda: self.pyr)
         self.button_layout.addWidget(set_pitch_yaw_roll_btn, 0, 4)
@@ -54,27 +54,3 @@ class ButtonsGroup():
         deactivate_sim_mode_btn.setStyleSheet(button_style)
         deactivate_sim_mode_btn.clicked.connect(lambda: self.deactivate_sim)
         self.button_layout.addWidget(deactivate_sim_mode_btn, 1, 2)
-
-        # Activate audio beacon button
-        activate_audio_beacon_btn = QPushButton("ACTIVATE BCN", center_widget)
-        activate_audio_beacon_btn.setStyleSheet(button_style)
-        activate_audio_beacon_btn.clicked.connect(lambda: self.actbcn)
-        self.button_layout.addWidget(activate_audio_beacon_btn, 1, 3)
-
-        # Deactivate audio beacon button
-        deactivate_audio_beacon_btn = QPushButton("DEACTIVATE BCN", center_widget)
-        deactivate_audio_beacon_btn.setStyleSheet(button_style)
-        deactivate_audio_beacon_btn.clicked.connect(lambda: self.debcn)
-        self.button_layout.addWidget(deactivate_audio_beacon_btn, 1, 4)
-
-        # Start recording button
-        start_recording_button = QPushButton("START RECORDING", center_widget)
-        start_recording_button.setStyleSheet(button_style)
-        start_recording_button.clicked.connect(lambda: self.rec)
-        self.button_layout.addWidget(start_recording_button, 2, 0)
-
-        # Stop recording button
-        stop_recording_button = QPushButton("STOP RECORDING", center_widget)
-        stop_recording_button.setStyleSheet(button_style)
-        stop_recording_button.clicked.connect(lambda: self.stopr)
-        self.button_layout.addWidget(stop_recording_button, 2, 1)                
