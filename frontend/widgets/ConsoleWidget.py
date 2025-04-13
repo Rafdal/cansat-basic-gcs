@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QHBoxLayout, QTextEdit
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QTextCursor
+from PyQt5.QtGui import QFont, QTextCursor, QColor
 from frontend.widgets.BasicWidgets import TextInput, Button
 
 class ConsoleWidget(QWidget):
@@ -48,13 +48,15 @@ class ConsoleWidget(QWidget):
         self.setText(self.defaultText)
 
     def setText(self, text):
+        self.consoleOutput.setTextColor(QColor(0, 0, 0))
         self.consoleOutput.setText(text)
         newlines = text.count('\n')+1
         self.lineCount.setText(f"Lines: {newlines}")
 
-    def appendText(self, text):
+    def appendText(self, text, color=QColor(0, 0, 0)):
         # Method to append text to the console, improving performance for large updates
         self.consoleOutput.moveCursor(QTextCursor.End)
+        self.consoleOutput.setTextColor(color)
         self.consoleOutput.insertPlainText(text)
         # Update line count
         newlines = self.consoleOutput.toPlainText().count('\n') + 1

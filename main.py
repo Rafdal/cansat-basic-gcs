@@ -10,6 +10,7 @@ from frontend.MainWindow import *
 from frontend.pages.DemoPage import DemoPage
 from frontend.pages.BlankPage import BlankPage
 from frontend.pages.ParamListExample import ParamListExample
+from frontend.pages.SerialTestPage import SerialTestPage
 
 import faulthandler
 
@@ -25,6 +26,7 @@ if __name__ == '__main__':
         DemoPage(),
         BlankPage(),
         ParamListExample(),
+        SerialTestPage(),
     ]
 
     print("Pages created, creating main window")
