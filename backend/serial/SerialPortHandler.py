@@ -1,5 +1,5 @@
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
-from PyQt5.QtCore import pyqtSignal, QObject, QThread
+from PyQt5.QtCore import pyqtSignal, QObject, QThread, QTimer
 import typing, dataclasses
 
 @dataclasses.dataclass
@@ -18,17 +18,25 @@ class SerialPortHandler(QObject):
     connected = pyqtSignal(bool)
     error = pyqtSignal(str)
     data_received = pyqtSignal(str)
+    bytes_per_second = pyqtSignal(int)
 
-    terminator = b'\n'  # Define a terminator for the data
+    terminator = b'\n'      # Define a terminator for the data
     max_buffer_size = 1024  # Define a maximum buffer size
+    bytes_received = 0      # Initialize bytes received counter
 
     def __init__(self):
         super().__init__()
         self.serial_port = QSerialPort()
         self.buffer = bytearray()  # Initialize buffer as a bytearray
-        self.serial_port.errorOccurred.connect(self._on_error)
+        self.serial_port.errorOccurred.connect(self._serial_error_handler)
         self.serial_port.readyRead.connect(self._handle_read)
         self.selected_port = SerialPortData()
+
+        self.bps_timer = QTimer()
+        self.bps_timer.timeout.connect(self._on_bps_timeout)
+        self.bps_timer.setSingleShot(False)
+        self.bps_timer.setInterval(1000)  # Update every second
+        self.bps_timer.start(1000)  # Update every second
 
     def set_baudrate(self, baudrate: int):
         """Set the baud rate for the serial port"""
@@ -48,13 +56,9 @@ class SerialPortHandler(QObject):
             # Configure port with explicit settings
             self.serial_port.setPortName(self.selected_port.name)
             self.serial_port.setBaudRate(self.selected_port.baudrate)
-            # self.serial_port.setDataBits(QSerialPort.Data8)
-            # self.serial_port.setParity(QSerialPort.NoParity)
-            # self.serial_port.setStopBits(QSerialPort.OneStop)
-            # self.serial_port.setFlowControl(QSerialPort.NoFlowControl)
-
-            # Set read/write timeouts (add these lines)
-            # self.serial_port.setReadBufferSize(4096)
+            self.serial_port.setDataBits(QSerialPort.Data8)
+            self.serial_port.setParity(QSerialPort.NoParity)
+            self.serial_port.setStopBits(QSerialPort.OneStop)
             
             # Try to open the port
             if not self.serial_port.open(QSerialPort.ReadWrite):
@@ -65,6 +69,7 @@ class SerialPortHandler(QObject):
                 # Clear buffer on new connection
                 self.buffer.clear()
                 self.connected.emit(True)
+                self.toggle_dtr_rts()
                 return True
         except Exception as e:
             self.error.emit(f"Error connecting to port {self.selected_port.name}: {str(e)}")
@@ -82,7 +87,7 @@ class SerialPortHandler(QObject):
             ports.append(port_data)
         return ports
 
-    def disconnect_from_port(self):
+    def disconnect(self) -> None:
         """Disconnect from the current serial port"""
         try:
             if self.serial_port.isOpen():
@@ -91,7 +96,29 @@ class SerialPortHandler(QObject):
         except Exception as e:
             self.error.emit(f"Error disconnecting: {str(e)}")
 
-    def send_data(self, data):
+    def kill_port(self) -> None:
+        self.serial_port.errorOccurred.disconnect(self._serial_error_handler)
+        self.serial_port.readyRead.disconnect(self._handle_read)
+        self.disconnect()
+        del self.serial_port
+        self.serial_port = None
+        self.buffer.clear()
+        self.connected.emit(False)
+        self.serial_port = QSerialPort()
+        self.selected_port = SerialPortData()
+        self.serial_port.errorOccurred.connect(self._serial_error_handler)
+        self.serial_port.readyRead.connect(self._handle_read)
+
+    def toggle_dtr_rts(self) -> None:
+        """Toggle DTR and RTS lines to wake up the device."""
+        if self.serial_port.isOpen():
+            self.serial_port.setDataTerminalReady(False)
+            self.serial_port.setRequestToSend(False)
+            QThread.msleep(100)  # Wait 100ms
+            self.serial_port.setDataTerminalReady(True)
+            self.serial_port.setRequestToSend(True)
+
+    def send_data(self, data) -> bool:
         """Send data to the serial port"""
         if not self.serial_port.isOpen():
             self.error.emit("Cannot send data: Port is not open")
@@ -108,17 +135,15 @@ class SerialPortHandler(QObject):
             self.error.emit(f"Error sending data: {str(e)}")
             return False
         
-    def _handle_read(self):
+    def _handle_read(self) -> None:
         """Handle data received from the serial port"""
-        print("handle_read called")
         if self.serial_port.bytesAvailable() > 0:
             try:
                 # Convert QByteArray to bytes properly
                 raw_data = self.serial_port.readAll()
                 newData = bytes(raw_data)
-                
-                print(f"Raw data received: {newData.hex()}")
-                
+                self.bytes_received += len(newData)  # Update bytes received counter
+                                
                 if newData:
                     # Add new data to buffer
                     self.buffer.extend(newData)
@@ -132,7 +157,7 @@ class SerialPortHandler(QObject):
             except Exception as e:
                 self.error.emit(f"Error reading from serial port: {str(e)}")
 
-    def _process_buffer(self):
+    def _process_buffer(self) -> None:
         """Process buffer for complete lines"""
         try:
             # Find position of first terminator
@@ -148,7 +173,6 @@ class SerialPortHandler(QObject):
                     line = line_bytes.decode('utf-8', errors='replace').strip()
                     if line:
                         self.data_received.emit(line)
-                        print(f"Line emitted: {line}")
                 except Exception as e:
                     self.error.emit(f"Error decoding line: {str(e)}")
                 
@@ -160,18 +184,16 @@ class SerialPortHandler(QObject):
         except Exception as e:
             self.error.emit(f"Error processing buffer: {str(e)}")
 
-    def _on_data_received(self, data):
-        """Handle data received from the reader thread"""
+
+    def _on_data_received(self, data) -> None:
         self.data_received.emit(data)
 
-    def _on_error(self, e):
-        """Handle error from the reader thread"""
-        if isinstance(e, QSerialPort.SerialPortError):
-            self._serial_error_handler(e)
-        else:
-            self.error.emit(f"Serial port error: {str(e)}")
+    def _on_bps_timeout(self) -> None:
+        """Handle bytes per second calculation"""
+        self.bytes_per_second.emit(self.bytes_received)
+        self.bytes_received = 0
 
-    def _serial_error_handler(self, error):
+    def _serial_error_handler(self, error) -> None:
         if type(error) != QSerialPort.SerialPortError:
             raise ValueError("The error is not a QSerialPort.SerialPortError")
         
@@ -179,30 +201,30 @@ class SerialPortHandler(QObject):
             case QSerialPort.SerialPortError.NoError:
                 return
             case QSerialPort.SerialPortError.DeviceNotFoundError:
-                self.errorOcurred.emit(f"Device {self.selected_port.name} not found")
+                self.error.emit(f"Device {self.selected_port.name} not found")
             case QSerialPort.SerialPortError.PermissionError:
-                self.errorOcurred.emit(f"Permission error on {self.selected_port.name}")
+                self.error.emit(f"Permission error on {self.selected_port.name}")
             case QSerialPort.SerialPortError.OpenError:
-                self.errorOcurred.emit(f"Error opening {self.selected_port.name}")
+                self.error.emit(f"Error opening {self.selected_port.name}")
             case QSerialPort.SerialPortError.ParityError:
-                self.errorOcurred.emit(f"Error on {self.selected_port.name} ParityError")
+                self.error.emit(f"Error on {self.selected_port.name} ParityError")
             case QSerialPort.SerialPortError.FramingError:
-                self.errorOcurred.emit(f"Error on {self.selected_port.name} FramingError")
+                self.error.emit(f"Error on {self.selected_port.name} FramingError")
             case QSerialPort.SerialPortError.BreakConditionError:
-                self.errorOcurred.emit(f"Error on {self.selected_port.name} BreakConditionError")
+                self.error.emit(f"Error on {self.selected_port.name} BreakConditionError")
             case QSerialPort.SerialPortError.WriteError:
-                self.errorOcurred.emit(f"Error on {self.selected_port.name} WriteError")
+                self.error.emit(f"Error on {self.selected_port.name} WriteError")
             case QSerialPort.SerialPortError.ReadError:
-                self.errorOcurred.emit(f"Error on {self.selected_port.name} ReadError")
+                self.error.emit(f"Error on {self.selected_port.name} ReadError")
             case QSerialPort.SerialPortError.ResourceError:
-                self.errorOcurred.emit(f"Error on {self.selected_port.name} ResourceError")
+                self.error.emit(f"Error on {self.selected_port.name} ResourceError")
             case QSerialPort.SerialPortError.UnsupportedOperationError:
-                self.errorOcurred.emit(f"Error on {self.selected_port.name} UnsupportedOperationError")
+                self.error.emit(f"Error on {self.selected_port.name} UnsupportedOperationError")
             case QSerialPort.SerialPortError.TimeoutError:
-                self.errorOcurred.emit(f"Error on {self.selected_port.name} TimeoutError")
+                self.error.emit(f"Error on {self.selected_port.name} TimeoutError")
             case QSerialPort.SerialPortError.NotOpenError:
-                self.errorOcurred.emit(f"Error on {self.selected_port.name} NotOpenError")
+                self.error.emit(f"Error on {self.selected_port.name} NotOpenError")
             case QSerialPort.SerialPortError.UnknownError:
-                self.errorOcurred.emit(f"Error on {self.selected_port.name} UnknownError")
+                self.error.emit(f"Error on {self.selected_port.name} UnknownError")
             case _:
-                self.errorOcurred.emit(f"Undefined Error {str(error)} on {self.selected_port.name}")
+                self.error.emit(f"Undefined Error {str(error)} on {self.selected_port.name}")
