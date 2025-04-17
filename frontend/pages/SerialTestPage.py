@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QHBoxLayout, QListWidget, QListWidgetItem, QLineEdit
+from PyQt5.QtWidgets import QHBoxLayout, QListWidget, QListWidgetItem, QLineEdit, QVBoxLayout
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QBrush
 
@@ -30,19 +30,37 @@ class SerialTestPage(BaseClassPage):
         hlayout.addWidget(kill_port_btn)
 
         # Add a list widget to display serial ports - with styling to ensure visibility
+        portListHLayout = QHBoxLayout()
         self.port_list = QListWidget()
         self.port_list.setResizeMode(QListWidget.ResizeMode.Adjust)
         self.port_list.setFixedHeight(0)  # Start with no height
+        portListHLayout.addWidget(self.port_list)
+        portListHLayout.addStretch()
+
+        hlayout_userIO = QHBoxLayout()
+        vlayout_btns = QVBoxLayout()
+
+        vlayout_btns.addWidget(Button("PING", on_click=lambda: self.model.serial.send_data(b"PING")))
+        vlayout_btns.addWidget(Button("CAL", on_click=lambda: self.model.serial.send_data(b"CAL")))
+        vlayout_btns.addWidget(Button("RESET", on_click=lambda: self.model.serial.send_data(b"RESET")))
+        vlayout_btns.addWidget(Button("FIRE1", on_click=lambda: self.model.serial.send_data(b"FIRE1")))
+        vlayout_btns.addWidget(Button("FIRE2", on_click=lambda: self.model.serial.send_data(b"FIRE2")))
+        vlayout_btns.addWidget(Button("RECORD", on_click=lambda: self.model.serial.send_data(b"RECORD")))
+        vlayout_btns.addWidget(Button("STOP", on_click=lambda: self.model.serial.send_data(b"STOP")))
+        vlayout_btns.addStretch()
 
         # Add a text area to display received data
         self.data_display = ConsoleWidget()
         self.user_input = QLineEdit()
         self.user_input.setPlaceholderText("Enter text here...")
 
+        hlayout_userIO.addWidget(self.data_display)
+        hlayout_userIO.addLayout(vlayout_btns)
+
         # Add widgets to the main layout
         layout.addLayout(hlayout)
-        layout.addWidget(self.port_list)
-        layout.addWidget(self.data_display)
+        layout.addLayout(portListHLayout)
+        layout.addLayout(hlayout_userIO)
         layout.addWidget(self.user_input)
         
         self.init_signals()
@@ -54,6 +72,7 @@ class SerialTestPage(BaseClassPage):
         self.model.serial.connected.connect(self.on_connection_status_changed)
         self.port_list.itemClicked.connect(self.on_port_clicked)
         self.user_input.returnPressed.connect(self.send_user_input)
+        self.model.serial.data_sent.connect(self.on_data_sent)
 
     def scan_ports(self):
         # Clear the list before updating
@@ -108,8 +127,11 @@ class SerialTestPage(BaseClassPage):
         user_text = self.user_input.text()
         if user_text:
             self.model.serial.send_data(user_text.encode())
-            self.data_display.appendText(f"Sent: {user_text}\n", color=QColor("blue"))
             self.user_input.clear()
+
+    def on_data_sent(self, data):
+        # Append sent data to the text display
+        self.data_display.appendText(f"Sent: {data}\n", color=QColor("blue"))
 
     def on_serial_error(self, error_message):
         # Display error message in the text display
