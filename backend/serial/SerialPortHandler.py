@@ -18,6 +18,7 @@ class SerialPortHandler(QObject):
     connected = pyqtSignal(bool)
     error = pyqtSignal(str)
     data_received = pyqtSignal(str)
+    data_sent = pyqtSignal(str)
     bytes_per_second = pyqtSignal(int)
 
     terminator = b'\n'      # Define a terminator for the data
@@ -130,6 +131,10 @@ class SerialPortHandler(QObject):
                 data = data.encode('utf-8')
             
             bytes_written = self.serial_port.write(data)
+            if isinstance(data, str):
+                self.data_sent.emit(data)
+            else:
+                self.data_sent.emit(data.decode('utf-8', errors='replace'))
             return bytes_written == len(data)
         except Exception as e:
             self.error.emit(f"Error sending data: {str(e)}")

@@ -23,9 +23,9 @@ if __name__ == '__main__':
 
     # create pages
     pages = [
-        DemoPage(),
-        BlankPage(),
-        ParamListExample(),
+        # DemoPage(),
+        # BlankPage(),
+        # ParamListExample(),
         SerialTestPage(),
     ]
 
