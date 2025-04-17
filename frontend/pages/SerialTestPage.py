@@ -16,9 +16,12 @@ class SerialTestPage(BaseClassPage):
         refresh_btn = Button("Scan Ports", on_click=self.scan_ports)
         connect_btn = Button("Connect", on_click=self.connect_to_port)
         disconnect_btn = Button("Disconnect", on_click=self.disconnect_from_port)
+        self.stream = False
+        toggle_stream_btn = Button("Toggle Stream", on_click=self.toggle_stream)
         hlayout.addWidget(refresh_btn)
         hlayout.addWidget(connect_btn)
         hlayout.addWidget(disconnect_btn)
+        hlayout.addWidget(toggle_stream_btn)
 
         self.baud_input = TextInput("Baud Rate", default="9600", regex=r"^\d+$", layout='h', callOnEnter=False, 
                                on_change=lambda x: print(f"Baud Rate changed to: {x}"))
@@ -54,6 +57,21 @@ class SerialTestPage(BaseClassPage):
         self.model.serial.connected.connect(self.on_connection_status_changed)
         self.port_list.itemClicked.connect(self.on_port_clicked)
         self.user_input.returnPressed.connect(self.send_user_input)
+
+    def toggle_stream(self):
+        # Toggle the stream state and update the button text accordingly
+        if self.stream:
+            self.stream = False
+            self.model.stop_timer()  # Stop the timer
+        else:
+            self.stream = True
+            self.model.attach_timer_callback(self.send_ping)  # Attach the callback to send ping
+            self.model.start_timer(500)  # Start the timer with a 1-second interval
+
+    def send_ping(self):
+        # Start streaming data from the serial port
+        self.model.serial.send_data(b"ping")
+        self.data_display.appendText(f"Sent: ping\n", color=QColor("blue"))
 
     def scan_ports(self):
         # Clear the list before updating
