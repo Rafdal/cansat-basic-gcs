@@ -16,12 +16,9 @@ class SerialTestPage(BaseClassPage):
         refresh_btn = Button("Scan Ports", on_click=self.scan_ports)
         connect_btn = Button("Connect", on_click=self.connect_to_port)
         disconnect_btn = Button("Disconnect", on_click=self.disconnect_from_port)
-        self.stream = False
-        toggle_stream_btn = Button("Toggle Stream", on_click=self.toggle_stream)
         hlayout.addWidget(refresh_btn)
         hlayout.addWidget(connect_btn)
         hlayout.addWidget(disconnect_btn)
-        hlayout.addWidget(toggle_stream_btn)
 
         self.baud_input = TextInput("Baud Rate", default="9600", regex=r"^\d+$", layout='h', callOnEnter=False, 
                                on_change=lambda x: print(f"Baud Rate changed to: {x}"))
@@ -50,6 +47,7 @@ class SerialTestPage(BaseClassPage):
         vlayout_btns.addWidget(Button("FIRE2", on_click=lambda: self.model.serial.send_data(b"FIRE2")))
         vlayout_btns.addWidget(Button("RECORD", on_click=lambda: self.model.serial.send_data(b"RECORD")))
         vlayout_btns.addWidget(Button("STOP", on_click=lambda: self.model.serial.send_data(b"STOP")))
+        vlayout_btns.addWidget(Button("TOGGLE", on_click=lambda: self.model.serial.send_data(b"TOGGLE")))
         vlayout_btns.addStretch()
 
         # Add a text area to display received data
@@ -76,16 +74,6 @@ class SerialTestPage(BaseClassPage):
         self.port_list.itemClicked.connect(self.on_port_clicked)
         self.user_input.returnPressed.connect(self.send_user_input)
         self.model.serial.data_sent.connect(self.on_data_sent)
-
-    def toggle_stream(self):
-        # Toggle the stream state and update the button text accordingly
-        if self.stream:
-            self.stream = False
-            self.model.stop_timer()  # Stop the timer
-        else:
-            self.stream = True
-            self.model.attach_timer_callback(self.send_ping)  # Attach the callback to send ping
-            self.model.start_timer(500)  # Start the timer with a 1-second interval
 
     def send_ping(self):
         # Start streaming data from the serial port
