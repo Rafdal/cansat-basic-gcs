@@ -26,10 +26,8 @@ if __name__ == '__main__':
         MainPage()
     ]
 
-    data = {'test': True}  # TODO: Conectar al serial
-
     timer = pg.QtCore.QTimer()
-    timer.timeout.connect(lambda: pages[0].update(data))
+    timer.timeout.connect(pages[0].update)
     timer.start(500)
 
     print("Pages created, creating main window")

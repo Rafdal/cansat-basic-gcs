@@ -1,15 +1,16 @@
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QGridLayout, QLineEdit
+from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QGridLayout
 from frontend.pages.BaseClassPage import BaseClassPage
-# Removed unused import
 from frontend.widgets.Sidebar import Sidebar
 from frontend.widgets.GraphWidget import GraphWidget
 from frontend.widgets.ButtonsGroup import ButtonsGroup
+from frontend.widgets.CommandLine import CommandLine
 from PyQt5.QtWidgets import QWidget
 
 ## Solo para test
 import random
 import time
 ##
+
 class MainPage(BaseClassPage):
     title = "Dashboard"
 
@@ -27,7 +28,6 @@ class MainPage(BaseClassPage):
 
         hlayout = QHBoxLayout()
 
-
         # Sidebar
         hlayout.addWidget(self.sidebar.sidebar_widget)
 
@@ -41,28 +41,16 @@ class MainPage(BaseClassPage):
         text_command.setStyleSheet(title_style)
         center_layout.addWidget(text_command)
 
-        buttons_group = ButtonsGroup(center_widget)
+        buttons_group = ButtonsGroup(center_widget, xbee=None) # TODO connect xbee
 
-        # Command line
-        custom_command_title = QLabel('Send Custom Command', center_widget)
-        custom_command_title.setStyleSheet(title_style)
-        command_line = QLineEdit(center_widget)
-        command_line.setStyleSheet('''QLineEdit{font-size:24px; padding:5px; font-weight:350;}''')
-        send_command_btn = QPushButton("SEND", center_widget)
-        send_command_btn.setStyleSheet('''QPushButton{font-size:20px; margin:5px; padding:10px; height:20px; width:50;}''')
-        send_command_btn.clicked.connect(lambda: print(command_line.text()))
+        command_line = CommandLine(center_widget, xbee=None) # TODO connect xbee
 
-        # Create a grid layout for the graphs
-        graphs_title = QLabel('Telemetry', center_widget)
-        graphs_title.setStyleSheet(title_style)
-
-        # Horizontal layout for command line and send button
-        command_layout = QHBoxLayout()
-        command_layout.addWidget(command_line)
-        command_layout.addWidget(send_command_btn)
-
+        layout.addLayout(hlayout)
+        center_layout.addLayout(buttons_group.button_layout)
+        center_layout.addLayout(command_line.command_line_layout)
+        
         graph_layout = QGridLayout()
-
+        
         # Add graphs widgets to the grid layout
         graph_layout.addWidget(self.graph_altitude.plot, 0, 0)
         graph_layout.addWidget(self.graph_airspeed.plot, 0, 1)
@@ -70,15 +58,9 @@ class MainPage(BaseClassPage):
         graph_layout.addWidget(self.graph_pressure.plot, 1, 0)
         graph_layout.addWidget(self.graph_voltage.plot, 1, 1)
 
-        layout.addLayout(hlayout)
-        center_layout.addLayout(buttons_group.button_layout)
-        center_layout.addWidget(custom_command_title)
-        center_layout.addLayout(command_layout)
-        center_layout.addWidget(graphs_title)
         center_layout.addLayout(graph_layout)
-
         
-    def update(self, data):
+    def update(self):
 
         ## solo para test
         def random_float(min_val, max_val):
@@ -88,10 +70,12 @@ class MainPage(BaseClassPage):
             return random.randint(min_val, max_val)
         ##
 
+        # TODO: change this to get data from the XBEE
+        # Simulate data for testing
         data = {
             "mission_time": time.strftime("%H:%M:%S", time.gmtime(random_int(0, 36000))),
             "packet_count": random_int(1, 1000),
-            "mode": random.choice(["SIMuLATION", "NORMAL"]),
+            "mode": random.choice(["SIMULATION", "NORMAL"]),
             "state": random.choice(["ASCENT", "DESCENT"]),
             "temperature": random_float(-20.0, 40.0),
             "airspeed": random_float(0.0, 50.0),
