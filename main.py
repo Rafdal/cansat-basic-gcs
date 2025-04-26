@@ -10,6 +10,7 @@ from frontend.MainWindow import *
 from frontend.pages.MainPage import MainPage
 import pyqtgraph as pg
 
+from frontend.pages.SerialTestPage import SerialTestPage
 
 import faulthandler
 
@@ -23,7 +24,8 @@ if __name__ == '__main__':
 
     # create pages
     pages = [
-        MainPage()
+        MainPage(),
+        SerialTestPage(),
     ]
 
     timer = pg.QtCore.QTimer()

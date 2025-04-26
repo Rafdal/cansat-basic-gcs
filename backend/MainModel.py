@@ -1,14 +1,9 @@
 from utils.ParamList import ParameterList, NumParam, BoolParam, TextParam, ChoiceParam, ConstParam
+from backend.serial.SerialPortHandler import SerialPortHandler
+from PyQt5.QtCore import QTimer
 
 class MainModel:
 
-    # Model attributes
-    count = 0
-
     # Initialization of Model members
     def __init__(self) -> None:
-        pass
-
-    # Model methods
-    def increment_count(self):
-        self.count += 1
+        self.serial = SerialPortHandler()
