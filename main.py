@@ -28,9 +28,6 @@ if __name__ == '__main__':
         SerialTestPage(),
     ]
 
-    timer = pg.QtCore.QTimer()
-    timer.timeout.connect(pages[0].update)
-    timer.start(500)
 
     print("Pages created, creating main window")
 

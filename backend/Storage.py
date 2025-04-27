@@ -1,15 +1,14 @@
 import csv
 import os
+from datetime import datetime
 
 class Storage():
     def __init__(self):
         self.file_path = "flight_3165.csv"
         # TODO: add a timestamp to the file name to avoid overwriting
     def open(self):
-        file_number = 0
-        while (os.path.exists(self.file_path)):
-            file_number += 1
-            self.file_path = f"flight_2099_{file_number}.csv"
+        datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.file_path = f"flight_2099_{datetime}.csv"
 
         with open(self.file_path, "w", newline='') as file:
             writer = csv.writer(file)

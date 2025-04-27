@@ -1,6 +1,6 @@
-import Commands
+from backend.Commands import Commands
 
-class Simulation():
+class SimulationMode():
 
     def __init__(self):
         simp_data_file = open("sim/cansat_2025_simp.txt", "r") 

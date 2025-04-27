@@ -16,29 +16,17 @@ class ButtonsGroup():
         set_time_btn.clicked.connect(lambda: commands.set_time_handler(xbee))
         self.button_layout.addWidget(set_time_btn, 0, 0)
 
-        # Start telemetry button
-        start_telemetry_btn = QPushButton("START TELEMETRY", center_widget)
-        start_telemetry_btn.setStyleSheet(button_style)
-        start_telemetry_btn.clicked.connect(lambda: commands.start_telemetry_handler(xbee))
-        self.button_layout.addWidget(start_telemetry_btn, 0, 1)
-
-        # End telemetry button
-        end_telemetry_btn = QPushButton("END TELEMETRY", center_widget)
-        end_telemetry_btn.setStyleSheet(button_style)
-        end_telemetry_btn.clicked.connect(lambda: commands.end_telemetry_handler(xbee))
-        self.button_layout.addWidget(end_telemetry_btn, 0, 2)
-
         # Calibrate altitude to zero button
         calibrate_altitude_to_zero_btn = QPushButton("CAL ALTITUDE", center_widget)
         calibrate_altitude_to_zero_btn.setStyleSheet(button_style)
         calibrate_altitude_to_zero_btn.clicked.connect(lambda: commands.cal_altitude_handler(xbee))
-        self.button_layout.addWidget(calibrate_altitude_to_zero_btn, 0, 3)
+        self.button_layout.addWidget(calibrate_altitude_to_zero_btn, 0, 1) 
 
         # Set pitch, roll button
         set_pitch_roll_btn = QPushButton("CAL PR", center_widget)
         set_pitch_roll_btn.setStyleSheet(button_style)
         set_pitch_roll_btn.clicked.connect(lambda: commands.set_pr_handler(xbee))
-        self.button_layout.addWidget(set_pitch_roll_btn, 0, 4)
+        self.button_layout.addWidget(set_pitch_roll_btn, 0, 2)
 
         # Enable sim mode button
         enable_sim_mode_btn = QPushButton("ENABLE SIM", center_widget)
