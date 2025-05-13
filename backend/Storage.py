@@ -4,12 +4,12 @@ from datetime import datetime
 
 class Storage():
     def __init__(self):
-        self.file_path = "flight_3165.csv"
-        # TODO: add a timestamp to the file name to avoid overwriting
-    def open(self):
-        datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.file_path = f"flight_2099_{datetime}.csv"
+        dt = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.file_path = f"flight_3165_{dt}.csv"
 
+        # TODO: For the actual flight, remove the datetime
+
+    def open(self):
         with open(self.file_path, "w", newline='') as file:
             writer = csv.writer(file)
             writer.writerow(["TEAM_ID", "MISSION_TIME", "PACKET_COUNT", "MODE", "STATE", "ALTITUDE", "TEMPERATURE", 
