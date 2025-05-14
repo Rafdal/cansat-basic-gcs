@@ -43,7 +43,7 @@ class SerialTestPage(BaseClassPage):
         vlayout_btns.addWidget(Button("PING", on_click=lambda: self.model.serial.send_data(b"PING")))
         vlayout_btns.addWidget(Button("CAL", on_click=lambda: self.model.serial.send_data(b"CAL")))
         vlayout_btns.addWidget(Button("RESET", on_click=lambda: self.model.serial.send_data(b"RESET")))
-        vlayout_btns.addWidget(Button("FIRE1", on_click=lambda: self.model.serial.send_data(b"FIRE1")))
+        vlayout_btns.addWidget(Button("FIRE1", on_click=self.send_xbee))
         vlayout_btns.addWidget(Button("FIRE2", on_click=lambda: self.model.serial.send_data(b"FIRE2")))
         vlayout_btns.addWidget(Button("RECORD", on_click=lambda: self.model.serial.send_data(b"RECORD")))
         vlayout_btns.addWidget(Button("STOP", on_click=lambda: self.model.serial.send_data(b"STOP")))
@@ -65,6 +65,11 @@ class SerialTestPage(BaseClassPage):
         layout.addWidget(self.user_input)
         
         self.init_signals()
+
+    def send_xbee(self):
+        frame = self.model.xbee_frame_formatter("FIRE1", self.model.dest_mac)
+        self.model.serial.send_data(frame)
+        print(" ".join(f"{byte:02X}" for byte in frame))
 
     def init_signals(self):
         # Connect signals
