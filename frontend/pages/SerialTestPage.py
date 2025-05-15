@@ -69,7 +69,7 @@ class SerialTestPage(BaseClassPage):
     def send_xbee(self):
         frame = self.model.xbee_frame_formatter("FIRE1", self.model.dest_mac)
         self.model.serial.send_data(frame)
-        print(" ".join(f"{byte:02X}" for byte in frame))
+        print(" ".join(f"{byte:02X}" for byte in frame))  # DEBUG: Sacar despues o comentr
 
     def init_signals(self):
         # Connect signals
@@ -129,9 +129,14 @@ class SerialTestPage(BaseClassPage):
         self.model.serial.disconnect()
         print("Disconnected from port.")
 
-    def on_data_received(self, data):
+    def on_data_received(self, data: str):
         # Append received data to the text display
         self.data_display.appendText(data + "\n")
+
+        byteArr = bytearray(data, 'utf-8')
+        # Parse the received data
+        parsed_data = self.model.xbee_frame_parser(byteArr)
+        print(f"XBEE: {parsed_data}")
 
     def send_user_input(self):
         # Get the text from the user input area and send it to the serial port
