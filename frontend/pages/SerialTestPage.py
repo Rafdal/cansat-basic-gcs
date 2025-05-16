@@ -40,14 +40,9 @@ class SerialTestPage(BaseClassPage):
         hlayout_userIO = QHBoxLayout()
         vlayout_btns = QVBoxLayout()
 
-        vlayout_btns.addWidget(Button("PING", on_click=lambda: self.model.serial.send_data(b"PING")))
-        vlayout_btns.addWidget(Button("CAL", on_click=lambda: self.model.serial.send_data(b"CAL")))
-        vlayout_btns.addWidget(Button("RESET", on_click=lambda: self.model.serial.send_data(b"RESET")))
-        vlayout_btns.addWidget(Button("FIRE1", on_click=self.send_xbee))
-        vlayout_btns.addWidget(Button("FIRE2", on_click=lambda: self.model.serial.send_data(b"FIRE2")))
-        vlayout_btns.addWidget(Button("RECORD", on_click=lambda: self.model.serial.send_data(b"RECORD")))
-        vlayout_btns.addWidget(Button("STOP", on_click=lambda: self.model.serial.send_data(b"STOP")))
-        vlayout_btns.addWidget(Button("TOGGLE", on_click=lambda: self.model.serial.send_data(b"TOGGLE")))
+        # vlayout_btns.addWidget(Button("PING", on_click=lambda: self.send_xbee("PING")))
+        vlayout_btns.addWidget(Button("FIRE", on_click=lambda: self.send_xbee("FIRE")))
+        # vlayout_btns.addWidget(Button("TOGGLE TELEMETRY", on_click=lambda: self.send_xbee("TOGGLE")))
         vlayout_btns.addStretch()
 
         # Add a text area to display received data
@@ -66,8 +61,8 @@ class SerialTestPage(BaseClassPage):
         
         self.init_signals()
 
-    def send_xbee(self):
-        frame = self.model.xbee_frame_formatter("FIRE1", self.model.dest_mac)
+    def send_xbee(self, data: str):
+        frame = self.model.xbee_frame_formatter(data, self.model.dest_mac)
         self.model.serial.send_data(frame)
         print(" ".join(f"{byte:02X}" for byte in frame))  # DEBUG: Sacar despues o comentr
 
