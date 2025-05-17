@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QHBoxLayout, QTextEdit
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QHBoxLayout, QTextEdit, QSizePolicy
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QTextCursor, QColor
 from frontend.widgets.BasicWidgets import TextInput, Button
@@ -9,7 +9,11 @@ class ConsoleWidget(QWidget):
         
         self.defaultText = defaultText
 
-        self.setFixedWidth(fixedWidth) if fixedWidth else None
+        # Size policy to make the widget expand as much as possible
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        
+        if fixedWidth:
+            self.setFixedWidth(fixedWidth)
         
         # Create the QLabel that will display the console output
         self.consoleOutput = QTextEdit()
@@ -18,6 +22,11 @@ class ConsoleWidget(QWidget):
         self.consoleOutput.setFont(QFont("Monospace", 10))
         self.consoleOutput.setText(defaultText + '\n')
         self.consoleOutput.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+
+        # Make the text area expand to fill available space
+        self.consoleOutput.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.consoleOutput.setMinimumHeight(200)  # Set a reasonable minimum height
+        
         if textSelectable:
             self.consoleOutput.setTextInteractionFlags(Qt.TextSelectableByMouse)
         
@@ -31,7 +40,7 @@ class ConsoleWidget(QWidget):
         topHLayout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         topHLayout.addWidget(self.lineCount)
         topHLayout.addStretch(1)
-        topHLayout.addWidget(Button("Clear Console", on_click=lambda: self.clearConsole()))
+        topHLayout.addWidget(Button("Clear", on_click=lambda: self.clearConsole()))
         vlayout.addLayout(topHLayout)
         vlayout.addWidget(self.consoleOutput)
         

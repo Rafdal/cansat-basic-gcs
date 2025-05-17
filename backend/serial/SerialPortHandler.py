@@ -16,6 +16,7 @@ class SerialPortData:
 
 class SerialPortHandler(QObject):
     connected = pyqtSignal(bool)
+    connected_status: bool = False
     error = pyqtSignal(str)
     data_received_str = pyqtSignal(str)
     data_received = pyqtSignal(bytearray)
@@ -71,6 +72,7 @@ class SerialPortHandler(QObject):
                 # Clear buffer on new connection
                 self.buffer.clear()
                 self.connected.emit(True)
+                self.connected_status = True
                 self.toggle_dtr_rts()
                 return True
         except Exception as e:
@@ -95,6 +97,7 @@ class SerialPortHandler(QObject):
             if self.serial_port.isOpen():
                 self.serial_port.close()
             self.connected.emit(False)
+            self.connected_status = False
         except Exception as e:
             self.error.emit(f"Error disconnecting: {str(e)}")
 
@@ -106,6 +109,7 @@ class SerialPortHandler(QObject):
         self.serial_port = None
         self.buffer.clear()
         self.connected.emit(False)
+        self.connected_status = False
         self.serial_port = QSerialPort()
         self.selected_port = SerialPortData()
         self.serial_port.errorOccurred.connect(self._serial_error_handler)
@@ -157,6 +161,13 @@ class SerialPortHandler(QObject):
             except Exception as e:
                 self.error.emit(f"Error reading from serial port: {str(e)}")
 
+    def _process_buffer(self) -> None:
+        """ Process buffer as raw bytes (without terminators) """
+        if self.buffer:
+            self.data_received.emit(self.buffer)
+            self.buffer.clear()
+
+
     def _process_buffer_str(self) -> None:
         """Process buffer for complete lines"""
         try:
@@ -184,11 +195,6 @@ class SerialPortHandler(QObject):
         except Exception as e:
             self.error.emit(f"Error processing buffer: {str(e)}")
 
-    def _process_buffer(self) -> None:
-        """ Process buffer as raw bytes (without terminators) """
-        if self.buffer:
-            self.data_received.emit(self.buffer)
-            self.buffer.clear()
 
     def _on_data_received_str(self, data) -> None:
         self.data_received_str.emit(data)
