@@ -20,7 +20,7 @@ class SerialTestPage(BaseClassPage):
         hlayout.addWidget(connect_btn)
         hlayout.addWidget(disconnect_btn)
 
-        self.baud_input = TextInput("Baud Rate", default="9600", regex=r"^\d+$", layout='h', callOnEnter=False, 
+        self.baud_input = TextInput("Baud Rate", default="115200", regex=r"^\d+$", layout='h', callOnEnter=False, 
                                on_change=lambda x: print(f"Baud Rate changed to: {x}"))
 
         hlayout.addWidget(self.baud_input)
@@ -62,9 +62,9 @@ class SerialTestPage(BaseClassPage):
         self.init_signals()
 
     def send_xbee(self, data: str):
-        frame = self.model.xbee_frame_formatter(data, self.model.dest_mac)
+        frame = self.model.xbee_frame_formatter(data, self.model.payload_mac)
         self.model.serial.send_data(frame)
-        print(" ".join(f"{byte:02X}" for byte in frame))  # DEBUG: Sacar despues o comentr
+        self.data_display.appendText(f"Enviado: {data}\n", color=QColor("blue"))
 
     def init_signals(self):
         # Connect signals
@@ -73,7 +73,6 @@ class SerialTestPage(BaseClassPage):
         self.model.serial.connected.connect(self.on_connection_status_changed)
         self.port_list.itemClicked.connect(self.on_port_clicked)
         self.user_input.returnPressed.connect(self.send_user_input)
-        self.model.serial.data_sent.connect(self.on_data_sent)
 
     def send_ping(self):
         # Start streaming data from the serial port
@@ -124,25 +123,29 @@ class SerialTestPage(BaseClassPage):
         self.model.serial.disconnect()
         print("Disconnected from port.")
 
-    def on_data_received(self, data: str):
+    def on_data_received(self, data: bytearray):
         # Append received data to the text display
-        self.data_display.appendText(data + "\n")
+        #check if data is printable
+        # display_data = data
+        # if all(32 <= byte <= 126 for byte in data):
+        #     display_data = data.decode('utf-8', errors='ignore')
+        # else:
+        #     display_data = ' '.join(f'{byte:02X}' for byte in data)
+        # self.data_display.appendText(f"Recibido: {display_data}\n", color=QColor("green"))
 
-        byteArr = bytearray(data, 'utf-8')
-        # Parse the received data
-        parsed_data = self.model.xbee_frame_parser(byteArr)
-        print(f"XBEE: {parsed_data}")
+        # Parse the received data - use original bytearray data
+        parsed_data, mac = self.model.xbee_frame_analyzer(data)
+        if parsed_data is not None:
+            mac_low = self.model.bytes_to_str(mac[-5:-1], prefix="", delimiter=" ")
+            print(f"XBEE [{mac_low}]: '{parsed_data}'")
+            self.data_display.appendText(f"Recibido [{mac_low}]: {parsed_data}\n", color=QColor("green"))
 
     def send_user_input(self):
         # Get the text from the user input area and send it to the serial port
         user_text = self.user_input.text()
         if user_text:
-            self.model.serial.send_data(user_text.encode())
+            self.send_xbee(user_text)
             self.user_input.clear()
-
-    def on_data_sent(self, data):
-        # Append sent data to the text display
-        self.data_display.appendText(f"Sent: {data}\n", color=QColor("blue"))
 
     def on_serial_error(self, error_message):
         # Display error message in the text display
