@@ -7,7 +7,7 @@ class SerialPortData:
     name: str = "None"
     description: str = "None"
     manufacturer: str = "None"
-    baudrate: int = 9600
+    baudrate: int = 115200
     def prettyPrint(self):
         return f"Port: {self.name}, Description: {self.description}, Manufacturer: {self.manufacturer}, Baud Rate: {self.baudrate}"
     def __str__(self):
@@ -16,9 +16,11 @@ class SerialPortData:
 
 class SerialPortHandler(QObject):
     connected = pyqtSignal(bool)
+    connected_status: bool = False
     error = pyqtSignal(str)
-    data_received = pyqtSignal(str)
-    data_sent = pyqtSignal(str)
+    data_received_str = pyqtSignal(str)
+    data_received = pyqtSignal(bytearray)
+    data_sent = pyqtSignal(bytearray)
     bytes_per_second = pyqtSignal(int)
 
     terminator = b'\n'      # Define a terminator for the data
@@ -70,6 +72,7 @@ class SerialPortHandler(QObject):
                 # Clear buffer on new connection
                 self.buffer.clear()
                 self.connected.emit(True)
+                self.connected_status = True
                 self.toggle_dtr_rts()
                 return True
         except Exception as e:
@@ -94,6 +97,7 @@ class SerialPortHandler(QObject):
             if self.serial_port.isOpen():
                 self.serial_port.close()
             self.connected.emit(False)
+            self.connected_status = False
         except Exception as e:
             self.error.emit(f"Error disconnecting: {str(e)}")
 
@@ -105,6 +109,7 @@ class SerialPortHandler(QObject):
         self.serial_port = None
         self.buffer.clear()
         self.connected.emit(False)
+        self.connected_status = False
         self.serial_port = QSerialPort()
         self.selected_port = SerialPortData()
         self.serial_port.errorOccurred.connect(self._serial_error_handler)
@@ -119,22 +124,15 @@ class SerialPortHandler(QObject):
             self.serial_port.setDataTerminalReady(True)
             self.serial_port.setRequestToSend(True)
 
-    def send_data(self, data) -> bool:
+    def send_data(self, data: bytearray) -> bool:
         """Send data to the serial port"""
         if not self.serial_port.isOpen():
             self.error.emit("Cannot send data: Port is not open")
             return False
 
         try:
-            # Convert string to bytes if needed
-            if isinstance(data, str):
-                data = data.encode('utf-8')
-            
             bytes_written = self.serial_port.write(data)
-            if isinstance(data, str):
-                self.data_sent.emit(data)
-            else:
-                self.data_sent.emit(data.decode('utf-8', errors='replace'))
+            self.data_sent.emit(data)
             return bytes_written == len(data)
         except Exception as e:
             self.error.emit(f"Error sending data: {str(e)}")
@@ -159,10 +157,18 @@ class SerialPortHandler(QObject):
                     
                     # Process complete lines
                     self._process_buffer()
+                    # self._process_buffer_str()
             except Exception as e:
                 self.error.emit(f"Error reading from serial port: {str(e)}")
 
     def _process_buffer(self) -> None:
+        """ Process buffer as raw bytes (without terminators) """
+        if self.buffer:
+            self.data_received.emit(self.buffer)
+            self.buffer.clear()
+
+
+    def _process_buffer_str(self) -> None:
         """Process buffer for complete lines"""
         try:
             # Find position of first terminator
@@ -177,7 +183,7 @@ class SerialPortHandler(QObject):
                 try:
                     line = line_bytes.decode('utf-8', errors='replace').strip()
                     if line:
-                        self.data_received.emit(line)
+                        self.data_received_str.emit(line)
                 except Exception as e:
                     self.error.emit(f"Error decoding line: {str(e)}")
                 
@@ -190,8 +196,8 @@ class SerialPortHandler(QObject):
             self.error.emit(f"Error processing buffer: {str(e)}")
 
 
-    def _on_data_received(self, data) -> None:
-        self.data_received.emit(data)
+    def _on_data_received_str(self, data) -> None:
+        self.data_received_str.emit(data)
 
     def _on_bps_timeout(self) -> None:
         """Handle bytes per second calculation"""

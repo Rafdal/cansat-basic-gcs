@@ -97,7 +97,7 @@ class SwitchButton(Button):
 
 # Text Input class
 class TextInput(QWidget):
-    def __init__(self, label="Input", placeholder="Type Here", default="", on_change=lambda text: (), regex="^$|[a-zA-Z0-9\\-\\.]*", layout='v', callOnEnter=True):
+    def __init__(self, label="Input", placeholder="Type Here", default="", on_change=lambda text: (), regex="^$|[a-zA-Z0-9\\-\\.]*", layout='v', callOnEnter=True, width=None):
         super().__init__()
 
         if layout == 'h':
@@ -109,6 +109,9 @@ class TextInput(QWidget):
         layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
         self.label = QLabel(label)
+        self.label.setAlignment(Qt.AlignLeft)
+        self.label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.textbox = QLineEdit(self)
         self.textbox.setPlaceholderText(placeholder)
         self.textbox.setText(default)
@@ -118,6 +121,9 @@ class TextInput(QWidget):
 
         layout.addWidget(self.label)
         layout.addWidget(self.textbox)
+
+        if width is not None:
+            self.textbox.setFixedWidth(width)
 
         self.setLayout(layout)
 
