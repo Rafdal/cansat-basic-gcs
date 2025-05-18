@@ -15,7 +15,7 @@ class SerialTestPage(BaseClassPage):
         vlayout_btns = QVBoxLayout()
         vlayout_btns.addWidget(Button("PING", on_click=lambda: self.send_xbee("PING")))
         vlayout_btns.addWidget(Button("FIRE", on_click=lambda: self.send_xbee("FIRE")))
-        vlayout_btns.addWidget(Button("TOGGLE TELEMETRY", on_click=lambda: self.send_xbee("TOGGLE")))
+        vlayout_btns.addWidget(Button("TOGGLE TELEMETRY", on_click=self.toggle_telemetry))
         vlayout_btns.addStretch()
         self.data_display = ConsoleWidget()
 
@@ -48,6 +48,14 @@ class SerialTestPage(BaseClassPage):
         self.model.on_data_received.connect(self.on_data_received)
         self.model.on_error.connect(self.on_error)
         self.user_input.returnPressed.connect(self.send_user_input)
+
+    def toggle_telemetry(self):
+        # Toggle telemetry mode
+        if self.model.commands.toggle_telemetry_handler():
+            self.model.storage.open()
+            self.data_display.appendText("Telemetry ON\n", color=QColor("blue"))
+        else:
+            self.data_display.appendText("Telemetry OFF\n", color=QColor("blue"))
 
     def send_xbee(self, data: str):
         data = self.send_prefix.text() + data

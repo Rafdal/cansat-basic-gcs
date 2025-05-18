@@ -17,7 +17,8 @@ class Storage():
                              "MAG_R", "MAG_P", "MAG_Y", "AUTO_GYRO_ROTATION_RATE", "GPS_TIME", "GPS_ALTITUDE", 
                              "GPS_LATITUDE", "GPS_LONGITUDE", "GPS_SATS", "CMD_ECHO"])
         print("Created file " + self.file_path)
-    
+
+
     def write(self, data):
         with open(self.file_path, "a", newline='') as file:
             writer = csv.writer(file)

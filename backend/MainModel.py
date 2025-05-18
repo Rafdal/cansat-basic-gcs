@@ -4,6 +4,8 @@ import typing
 
 from backend.serial.SerialPortHandler import SerialPortHandler
 from backend.serial.XbeeTools import XbeeTools
+from backend.Storage import Storage
+from backend.Commands import Commands
 
 class MainModel(QObject):
     on_error = pyqtSignal(str)                      # Signal for error handling
@@ -12,12 +14,15 @@ class MainModel(QObject):
     payload_mac = bytearray([0x00,0x13,0xA2,0x00,0x42,0x28,0xA1,0xB0])
     on_data_received = pyqtSignal(str, bytearray)   # Signal for data received (data, mac)
 
+
     # Initialization of Model members
     def __init__(self) -> None:
         super().__init__()
         self.serial = SerialPortHandler()
         self.xbee_tools = XbeeTools(dest_mac=self.payload_mac)
         self.timer = QTimer()
+        self.storage = Storage()                          # Storage instance for saving data
+        self.commands = Commands()                        # Commands instance for sending commands
         self.__init_signals__()
 
     def begin(self):
@@ -37,3 +42,5 @@ class MainModel(QObject):
         self.xbee_tools.on_error.connect(self.on_error.emit)
         self.timer.timeout.connect(self.on_second_elapsed.emit)
         self.timer.start(1000)
+
+        self.commands.send_command.connect(self.transmit_data)

@@ -28,7 +28,6 @@ if __name__ == '__main__':
         SerialTestPage(),
     ]
 
-
     print("Pages created, creating main window")
 
     ex = MainWindow(pages=pages, model=mainModel, title="Ground Station - SEDS ITBA")

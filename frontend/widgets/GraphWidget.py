@@ -1,6 +1,7 @@
 import pyqtgraph as pg
 
 from PyQt5.QtGui import QColor
+import numpy as np
 
 class GraphWidget():
     def __init__(self, title, label_x, units_x, label_y, units_y):
@@ -12,7 +13,7 @@ class GraphWidget():
         self.units_x = units_x
         self.label_y = label_y
         self.units_y = units_y
-        self.values = []
+        self.values = np.array([])
 
         self.pen = pg.mkPen(color=QColor(40, 51, 101), width=2)  
         self.plot = pg.plot()
@@ -23,6 +24,7 @@ class GraphWidget():
 
         self.curve = self.plot.plot(pen=self.pen, antialias=True)
 
-    def update(self, value):
-        self.values.append(value)
+    def update(self, value: float):
+        # self.values.append(value)
+        self.values = np.append(self.values, value)
         self.curve.setData(self.values)

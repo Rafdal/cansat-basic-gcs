@@ -4,7 +4,6 @@ from frontend.widgets.Sidebar import Sidebar
 from frontend.widgets.GraphWidget import GraphWidget
 from frontend.widgets.ButtonsGroup import ButtonsGroup
 from frontend.widgets.CommandLine import CommandLine
-from backend.Storage import Storage
 from backend.SimulationMode import SimulationMode
 from PyQt5.QtWidgets import QWidget, QPushButton
 import pyqtgraph as pg
@@ -23,13 +22,12 @@ class MainPage(BaseClassPage):
         self.sidebar = Sidebar()
 
         self.graph_altitude = GraphWidget("Altitude", "Time", "s", "Altitude", "[m]")
-        self.graph_airspeed = GraphWidget("Air Speed", "Time", "s", "Air Speed", "[m/s]")
+        self.graph_rpm = GraphWidget("Air Speed", "Time", "s", "Air Speed", "[m/s]")
         self.graph_temperature = GraphWidget("Temperature", "Time", "s", "Temperature", "[C]")
         self.graph_pressure = GraphWidget("Pressure", "Time", "s", "Pressure", "[Pa]")
         self.graph_voltage = GraphWidget("Voltage", "Time", "s", "Voltage", "[V]")
 
         self.simulation = SimulationMode()
-        self.storage = Storage()
         self.xbee = "xbee" # TODO: connect xbee
 
         self.timer = pg.QtCore.QTimer()
@@ -83,13 +81,54 @@ class MainPage(BaseClassPage):
         
         # Add graphs widgets to the grid layout
         graph_layout.addWidget(self.graph_altitude.plot, 0, 0)
-        graph_layout.addWidget(self.graph_airspeed.plot, 0, 1)
+        graph_layout.addWidget(self.graph_rpm.plot, 0, 1)
         graph_layout.addWidget(self.graph_temperature.plot, 0, 2)
         graph_layout.addWidget(self.graph_pressure.plot, 1, 0)
         graph_layout.addWidget(self.graph_voltage.plot, 1, 1)
 
         center_layout.addLayout(graph_layout)
-        
+        self.init_signals()
+
+    def init_signals(self):
+        self.model.on_data_received.connect(self.on_cansat_data_received)
+
+    def on_cansat_data_received(self, data: str, mac: bytearray):
+        # print(f"\tMainPage -> Data received \'{data}\'")
+        if ("3165," in data[0:6]):
+            parsed_data = self.parse_cansat_data(data)
+            # Process the parsed data as needed
+            print(f"Parsed data: {parsed_data}")
+            self.update_plot_with_data(parsed_data)
+
+    def parse_cansat_data(self, data_str: str) -> dict:
+        fields = data_str.strip().split(",")
+        return {
+            "mission_time": fields[1],
+            "packet_count": int(fields[2]),
+            "mode": fields[3],
+            "state": fields[4],
+            "altitude": float(fields[5]),
+            "temperature": float(fields[6]),
+            "pressure": float(fields[7]),
+            "voltage": float(fields[8]),
+            "gyro_r": float(fields[9]),
+            "gyro_p": float(fields[10]),
+            "gyro_y": float(fields[11]),
+            "accel_r": float(fields[12]),
+            "accel_p": float(fields[13]),
+            "accel_y": float(fields[14]),
+            "mag_r": float(fields[15]),
+            "mag_p": float(fields[16]),
+            "mag_y": float(fields[17]),
+            "autogyro_rot_rate": float(fields[18]),
+            "gps_time": fields[19],
+            "gps_altitude": float(fields[20]),
+            "gps_latitude": float(fields[21]),
+            "gps_longitude": float(fields[22]),
+            "gps_sats": int(fields[23]),
+            "cmd_echo": fields[24]
+        }
+
     def update(self):
 
         ## solo para test
@@ -121,7 +160,7 @@ class MainPage(BaseClassPage):
             "mag_r": random_float(-50.0, 50.0),
             "mag_p": random_float(-50.0, 50.0),
             "mag_y": random_float(-50.0, 50.0),
-            "autogyro_desc_rate": random_float(0.0, 5.0),
+            "autogyro_rot_rate": random_float(0.0, 5.0),
             "gps_time": time.strftime("%H:%M:%S", time.gmtime(random_int(0, 86400))),
             "gps_altitude": random_float(0.0, 2000.0),
             "gps_latitude": random_float(-90.0, 90.0),
@@ -140,24 +179,28 @@ class MainPage(BaseClassPage):
             simulated_value = self.simulation.send_command(self.xbee)
             data['pressure'] = simulated_value
         
-        self.sidebar.update(data['mission_time'], data['packet_count'], data['mode'], data['state'], data['altitude'], data['temperature'], data['pressure'], data['voltage'], data['gyro_r'], data['gyro_p'], data['gyro_y'], data['accel_r'], data['accel_p'], data['accel_y'], data['mag_r'], data['mag_p'], data['mag_y'], data['autogyro_desc_rate'], data['gps_time'], data['gps_altitude'], data['gps_latitude'], data['gps_longitude'], data['gps_sats'], data['cmd_echo'])
+        self.update_plot_with_data(data)
+        
+
+    def update_plot_with_data(self, data: dict):
+        self.sidebar.update(data['mission_time'], data['packet_count'], data['mode'], data['state'], data['altitude'], data['temperature'], data['pressure'], data['voltage'], data['gyro_r'], data['gyro_p'], data['gyro_y'], data['accel_r'], data['accel_p'], data['accel_y'], data['mag_r'], data['mag_p'], data['mag_y'], data['autogyro_rot_rate'], data['gps_time'], data['gps_altitude'], data['gps_latitude'], data['gps_longitude'], data['gps_sats'], data['cmd_echo'])
         self.graph_altitude.update(data['altitude'])
-        self.graph_airspeed.update(data['airspeed'])
+        self.graph_rpm.update(data['autogyro_rot_rate'])
         self.graph_temperature.update(data['temperature'])
         self.graph_pressure.update(data['pressure'])
         self.graph_voltage.update(data['voltage'])    
 
-        self.storage.write(data.values()) # TODO: change to the actual data format (CSV)        
+        self.model.storage.write(data.values()) # TODO: change to the actual data format (CSV)
+
 
     def start_telemetry_wrapper(self):
         print(f"Telemetry started")
-        self.storage.open()
+        self.model.storage.open()
         self.timer.timeout.connect(self.update)
-        self.timer.start(500) # In miliseconds
+        self.timer.start(1000) # In miliseconds
         self.commands.start_telemetry_handler(self.xbee)
 
     def end_telemetry_wrapper(self):
         print(f"Telemetry ended")
         self.timer.stop()
-        self.storage.close()
         self.commands.end_telemetry_handler(self.xbee)

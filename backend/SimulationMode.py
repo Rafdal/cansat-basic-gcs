@@ -15,9 +15,11 @@ class SimulationMode():
     def enable(self):
         self.initialized = True
 
-    def send_command(self, xbee):
+    def send_command(self, xbee = None):
         print(f"Simulation mode sended: {self.commands_list[self.index]}")
         sent = self.commands_list[self.index].split(",")[3]
+        if (xbee is None or isinstance(xbee, str)):
+            return 
         self.commands.callback_command(xbee = xbee.xbee, msg = self.commands_list[self.index])
         self.index = self.index + 1
         if (self.index == len(self.commands_list)):
