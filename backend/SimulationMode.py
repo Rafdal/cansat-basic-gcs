@@ -1,17 +1,18 @@
 from backend.Commands import Commands
 
+# 2024 legacy code 
 class SimulationMode():
 
     def __init__(self):
         simp_data_file = open("sim/cansat_2025_simp.txt", "r") 
         raw_data_file = simp_data_file.read().split("\n")
         commands = [line for line in raw_data_file if line and line.startswith("CMD")]
-        self.commands_list = [line.replace("$,SIMP,", "2099,SIMP, ") for line in commands]
+        self.commands_list = [line.replace("$,SIMP,", "3165,SIMP, ") for line in commands]
         self.index = 0
         self.initialized = False
         self.commands = Commands()
 
-    def init(self):
+    def enable(self):
         self.initialized = True
 
     def send_command(self, xbee):

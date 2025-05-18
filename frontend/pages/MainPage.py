@@ -131,6 +131,10 @@ class MainPage(BaseClassPage):
         }
 
         if data['mode'] == "S":
+
+            if self.simulation.initialized == False:
+                self.simulation.enable()
+
             self.simulation.send_command(xbee=None)
 
             simulated_value = self.simulation.send_command(self.xbee)
@@ -149,7 +153,7 @@ class MainPage(BaseClassPage):
         print(f"Telemetry started")
         self.storage.open()
         self.timer.timeout.connect(self.update)
-        self.timer.start(500)
+        self.timer.start(500) # In miliseconds
         self.commands.start_telemetry_handler(self.xbee)
 
     def end_telemetry_wrapper(self):
