@@ -90,6 +90,17 @@ class SerialPortHandler(QObject):
             )
             ports.append(port_data)
         return ports
+    
+    def auto_connect(self, exclude_manufacturer: str):
+        """Automatically connect to the first available serial port that is not excluded."""
+        ports = self.list_serial_ports()
+        for port in ports:
+            if exclude_manufacturer not in port.manufacturer:
+                self.selected_port = port
+                if self.connect():
+                    return True
+        self.error.emit("No suitable serial port found")
+        return False
 
     def disconnect(self) -> None:
         """Disconnect from the current serial port"""

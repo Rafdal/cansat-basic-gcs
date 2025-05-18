@@ -20,6 +20,10 @@ class MainModel(QObject):
         self.timer = QTimer()
         self.__init_signals__()
 
+    def begin(self):
+        """ Execute functions after the UI is loaded. """
+        self.serial.auto_connect(exclude_manufacturer="Microsoft")
+
     def transmit_data(self, data: str):
         """ Send data to the XBee device. """
         frame = self.xbee_tools.frame_formatter(data, self.payload_mac)

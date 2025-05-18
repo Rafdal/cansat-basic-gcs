@@ -19,11 +19,9 @@ class XbeeFrame:
         self.status = status
 
 class XbeeTools(QObject):
+    """ Clase para manejar frames de XBee y extraer datos de ellos."""
     on_error = pyqtSignal(str)  # Signal for error handling
     on_receive = pyqtSignal(str, bytearray)  # Signal for data received
-    """
-    Clase para manejar frames de XBee y extraer datos de ellos.
-    """
     def __init__(self, dest_mac: bytearray = None, start_delimiter: int = 0x7E) -> None:
         super().__init__()
         """
@@ -151,9 +149,11 @@ class XbeeTools(QObject):
         self.on_error.emit(f"Frame no reconocido o no implementado: {self.bytes_to_str(frame)}")
         return XbeeFrame(frame_type=XBEE_FRAME_TYPE_ERROR)
 
+
     def bytes_to_str(self, data: bytearray, prefix: str = "0x", delimiter: str = " ") -> str:
         """Converts bytes to a formatted string."""
         return delimiter.join(f'{prefix}{b:02X}' for b in data)
+
 
     def _extract_packet_data(self, frame: bytearray) -> Tuple[str, bytearray]:
         """
@@ -188,6 +188,36 @@ class XbeeTools(QObject):
         frame_data += mac
         frame_data.append(broadcast_radius)
         frame_data += data_bytes
+
+        #qca aclculo longitud para agregarlo al frame
+        length = len(frame_data)
+        length_msb = (length >> 8) & 0xFF
+        length_lsb = length & 0xFF
+
+        # se calcula el checksum
+        checksum = 0xFF - (sum(frame_data) & 0xFF)
+
+        # frame completo
+        frame = bytearray()
+        frame.append(self.start_delimiter)
+        frame.append(length_msb)
+        frame.append(length_lsb)
+        frame += frame_data
+        frame.append(checksum)
+
+        return frame
+
+    # NOT TESTED, NOT USED
+    def frame_formatter_base(self, frame_type: bytes, frame_id: bytes, frame_payload: bytearray) -> bytearray:
+        """ Formatea un frame XBee para enviar un frame_data crudo. """
+
+        print("frame_formatter_base NO TESTED, NOT USED")
+
+        #aca armo el frame en si
+        frame_data = bytearray()
+        frame_data.append(frame_type)
+        frame_data.append(frame_id)
+        frame_data += frame_payload
 
         #qca aclculo longitud para agregarlo al frame
         length = len(frame_data)

@@ -24,6 +24,7 @@ class MainWindow(QMainWindow):
         self.model = model
         self.setWindowTitle(title)
         self.initUI(pages)
+        self.model.begin()
 
     def initUI(self, pages):
 
