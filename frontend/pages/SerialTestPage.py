@@ -66,8 +66,7 @@ class SerialTestPage(BaseClassPage):
         color = QColor("green")
         if "ERR" in data:
             color = QColor("red")
-        self.data_display.appendText(f"Recibido: {data}\n", color=color)
-        print(f"Recibido: \'{data}\' de {' '.join(f'{b:02X}' for b in mac)}' )")
+        self.data_display.appendText(f"Recibido: \'{data}\'\n", color=color)
 
     def send_user_input(self):
         # Get the text from the user input area and send it to the serial port

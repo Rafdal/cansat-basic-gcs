@@ -1,4 +1,5 @@
 from backend.Commands import Commands
+import numpy as np
 
 # 2024 legacy code 
 class SimulationMode():
@@ -18,8 +19,10 @@ class SimulationMode():
     def send_command(self, xbee = None):
         print(f"Simulation mode sended: {self.commands_list[self.index]}")
         sent = self.commands_list[self.index].split(",")[3]
+        
         if (xbee is None or isinstance(xbee, str)):
-            return 
+            return np.float64(93948)    # WORKAROUND (crasheaba)
+        
         self.commands.callback_command(xbee = xbee.xbee, msg = self.commands_list[self.index])
         self.index = self.index + 1
         if (self.index == len(self.commands_list)):

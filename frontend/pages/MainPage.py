@@ -10,9 +10,8 @@ import pyqtgraph as pg
 from backend.Commands import Commands
 
 ## Solo para test
-import random
+from numpy import random, round
 import time
-##
 
 class MainPage(BaseClassPage):
     title = "Dashboard"
@@ -21,11 +20,11 @@ class MainPage(BaseClassPage):
         super().__init__()
         self.sidebar = Sidebar()
 
-        self.graph_altitude = GraphWidget("Altitude", "Time", "s", "Altitude", "[m]")
-        self.graph_rpm = GraphWidget("Air Speed", "Time", "s", "Air Speed", "[m/s]")
-        self.graph_temperature = GraphWidget("Temperature", "Time", "s", "Temperature", "[C]")
-        self.graph_pressure = GraphWidget("Pressure", "Time", "s", "Pressure", "[Pa]")
-        self.graph_voltage = GraphWidget("Voltage", "Time", "s", "Voltage", "[V]")
+        self.graph_altitude = GraphWidget("Altitude", "Time", "s", "Altitude", "m")
+        self.graph_rpm = GraphWidget("Air Speed", "Time", "s", "Air Speed", "m/s")
+        self.graph_temperature = GraphWidget("Temperature", "Time", "s", "Temperature", "C")
+        self.graph_pressure = GraphWidget("Pressure", "Time", "s", "Pressure", "Pa")
+        self.graph_voltage = GraphWidget("Voltage", "Time", "s", "Voltage", "V")
 
         self.simulation = SimulationMode()
         self.xbee = "xbee" # TODO: connect xbee
@@ -80,11 +79,11 @@ class MainPage(BaseClassPage):
         graph_layout = QGridLayout()
         
         # Add graphs widgets to the grid layout
-        graph_layout.addWidget(self.graph_altitude.plot, 0, 0)
-        graph_layout.addWidget(self.graph_rpm.plot, 0, 1)
-        graph_layout.addWidget(self.graph_temperature.plot, 0, 2)
-        graph_layout.addWidget(self.graph_pressure.plot, 1, 0)
-        graph_layout.addWidget(self.graph_voltage.plot, 1, 1)
+        graph_layout.addWidget(self.graph_altitude, 0, 0)
+        graph_layout.addWidget(self.graph_rpm, 0, 1)
+        graph_layout.addWidget(self.graph_temperature, 0, 2)
+        graph_layout.addWidget(self.graph_pressure, 1, 0)
+        graph_layout.addWidget(self.graph_voltage, 1, 1)
 
         center_layout.addLayout(graph_layout)
         self.init_signals()
@@ -97,7 +96,7 @@ class MainPage(BaseClassPage):
         if ("3165," in data[0:6]):
             parsed_data = self.parse_cansat_data(data)
             # Process the parsed data as needed
-            print(f"Parsed data: {parsed_data}")
+            # print(f"Parsed data: {parsed_data}")
             self.update_plot_with_data(parsed_data)
 
     def parse_cansat_data(self, data_str: str) -> dict:
@@ -197,10 +196,10 @@ class MainPage(BaseClassPage):
         print(f"Telemetry started")
         self.model.storage.open()
         self.timer.timeout.connect(self.update)
-        self.timer.start(1000) # In miliseconds
-        self.commands.start_telemetry_handler(self.xbee)
+        self.timer.start(1000) # In milliseconds
+        self.commands.start_telemetry_handler()
 
     def end_telemetry_wrapper(self):
         print(f"Telemetry ended")
         self.timer.stop()
-        self.commands.end_telemetry_handler(self.xbee)
+        self.commands.end_telemetry_handler()
