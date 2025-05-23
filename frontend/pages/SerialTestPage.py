@@ -18,6 +18,7 @@ class SerialTestPage(BaseClassPage):
         # vlayout_btns.addWidget(Button("TOGGLE TELEMETRY", on_click=self.toggle_telemetry))
         vlayout_btns.addWidget(Button("ACTIVATE TELEMETRY", on_click=self.activate_telemetry))
         vlayout_btns.addWidget(Button("DEACTIVATE TELEMETRY", on_click=self.deactivate_telemetry))
+        vlayout_btns.addWidget(Button("CAL", on_click=lambda: self.send_xbee("CAL")))
         vlayout_btns.addStretch()
         self.data_display = ConsoleWidget()
 

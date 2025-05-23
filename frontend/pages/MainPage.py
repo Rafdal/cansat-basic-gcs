@@ -59,14 +59,20 @@ class MainPage(BaseClassPage):
         # Start telemetry button
         start_telemetry_btn = QPushButton("START TELEMETRY", center_widget)
         start_telemetry_btn.setStyleSheet(button_style)
-        start_telemetry_btn.clicked.connect(lambda: self.start_telemetry_wrapper())
+        start_telemetry_btn.clicked.connect(self.start_telemetry_wrapper)
         telemetry_button_layout.addWidget(start_telemetry_btn)
 
         # End telemetry button
         end_telemetry_btn = QPushButton("END TELEMETRY", center_widget)
         end_telemetry_btn.setStyleSheet(button_style)
-        end_telemetry_btn.clicked.connect(lambda: self.end_telemetry_wrapper())
+        end_telemetry_btn.clicked.connect(self.end_telemetry_wrapper)
         telemetry_button_layout.addWidget(end_telemetry_btn)
+
+        # Clear Data button
+        clear_data_btn = QPushButton("CLEAR PLOT DATA", center_widget)
+        clear_data_btn.setStyleSheet(button_style)
+        clear_data_btn.clicked.connect(self.clear_plot_data)
+        telemetry_button_layout.addWidget(clear_data_btn)
 
         center_layout.addLayout(telemetry_button_layout)
 
@@ -192,6 +198,13 @@ class MainPage(BaseClassPage):
         
         self.update_plot_with_data(data)
 
+    def clear_plot_data(self):
+        self.graph_altitude.clear()
+        self.graph_rpm.clear()
+        self.graph_temperature.clear()
+        self.graph_pressure.clear()
+        self.graph_voltage.clear()
+        self.graph_accel.clear()
 
     def update_plot_with_data(self, data: dict):
         self.sidebar.update(data['mission_time'], data['packet_count'], data['mode'], data['state'], data['altitude'], data['temperature'], data['pressure'], data['voltage'], data['gyro_r'], data['gyro_p'], data['gyro_y'], data['accel_r'], data['accel_p'], data['accel_y'], data['mag_r'], data['mag_p'], data['mag_y'], data['autogyro_rot_rate'], data['gps_time'], data['gps_altitude'], data['gps_latitude'], data['gps_longitude'], data['gps_sats'], data['cmd_echo'])

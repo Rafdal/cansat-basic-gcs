@@ -33,6 +33,10 @@ class GraphWidget(QWidget):
         layout.addWidget(self.plot)
         self.setLayout(layout)
 
+    def clear(self):
+        self.values = np.array([], dtype=np.float64)
+        self.curve.setData(self.values)
+
     def update(self, value: np.float64):
         self.values = np.append(self.values, value)
         self.curve.setData(self.values)
@@ -64,6 +68,11 @@ class GraphWidgetMultiplot(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.plot)
         self.setLayout(layout)
+
+    def clear(self):
+        for plot in self.plots.values():
+            plot['data'] = np.array([], dtype=np.float64)
+            plot['plot_item'].setData(plot['data'])
 
     def add_plot(self, plot_name: str, color: QColor = QColor(40, 51, 101)):
         pen = pg.mkPen(color=color, width=2)
