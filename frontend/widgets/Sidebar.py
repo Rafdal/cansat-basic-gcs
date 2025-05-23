@@ -2,6 +2,8 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
+from random import randint
+import random
 
 # Team ID: 3165
 
@@ -84,13 +86,23 @@ class Sidebar(QWidget):
         self.label_gyro_y = QLabel(f"Gyro y: {self.gyro_y}")
         self.label_gyro_y.setStyleSheet(text_style)
 
-        self.label_accel_r = QLabel(f"Accel r: {self.accel_r}")
+        #self.label_accel_r = QLabel(f"Accel r: {self.accel_r}")
+        #self.label_accel_r.setStyleSheet(text_style)
+
+        self.label_accel_r = QLabel(f"Accel r: {random.randint(0, 1)}")
         self.label_accel_r.setStyleSheet(text_style)
 
-        self.label_accel_p = QLabel(f"Accel p: {self.accel_p}")
+
+        #self.label_accel_p = QLabel(f"Accel p: {self.accel_p}")
+        #self.label_accel_p.setStyleSheet(text_style)
+
+        self.label_accel_p = QLabel(f"Accel p: {random.randint(0, 1)}")
         self.label_accel_p.setStyleSheet(text_style)
 
-        self.label_accel_y = QLabel(f"Accel y: {self.accel_y}")
+        #self.label_accel_y = QLabel(f"Accel y: {self.accel_y}")
+        #self.label_accel_y.setStyleSheet(text_style)
+
+        self.label_accel_y = QLabel(f"Accel y: {random.randint(0, 1)}")
         self.label_accel_y.setStyleSheet(text_style)
 
         self.label_mag_r = QLabel(f"Mag r: {self.mag_r}")

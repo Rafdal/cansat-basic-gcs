@@ -25,7 +25,7 @@ def main():
 
     # create pages
     pages = [
-        MainPage(),
+        MainPage(),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
         SerialTestPage(),
     ]
 
